@@ -1,9 +1,0 @@
-eclipse.preferences.version=1
-encoding//include/record.hrl=UTF-8
-encoding//src/script/staticData/static_games.erl=UTF-8
-encoding//src/service/fun/fun_mysqlConn.erl=UTF-8
-encoding//src/service/fun/fun_scene.erl=UTF-8
-encoding//src/service/fun/fun_sessionMng.erl=ISO-8859-1
-encoding//src/service/proto/pt_writer.erl=UTF-8
-encoding//src/service/server/mynet/mynet_svr.erl=UTF-8
-encoding/<project>=UTF-8

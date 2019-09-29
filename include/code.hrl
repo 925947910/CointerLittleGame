@@ -1,4 +1,0 @@
--define(SUCC,0).
--define(FAILED,1).
--define(LOGIN_REPEAT,2).
--define(LOGIN_FAILED,3).
