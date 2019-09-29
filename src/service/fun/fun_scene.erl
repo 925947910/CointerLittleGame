@@ -67,7 +67,6 @@ do_msg({cliAction,BinData}) ->
 		_->skip
 	end;
 do_msg({cliEvent,BinData}) ->
-	?log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!"),
 	case get_fields(game, 0, ?GameIndexStatus) of  
 		?GAME_RUNING->
 			append_frames(BinData),
