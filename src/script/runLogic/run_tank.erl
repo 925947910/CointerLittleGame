@@ -38,13 +38,11 @@ cliEvent(BinData)->
 	        case BinData  of  
 				<<?CliEventDie:?u8,Bin/binary>>->
 					{Uid,_}  = pt:read_int(Bin),
-					  ?log("!!!!!!!CliEventDie!!!!!!!!!!!!!!!!!!!!!!!!!!!~p",[Uid]),
 					die(Uid);
 				<<?CliEventTankScore:?u8,Uid:?u32,Score:?u32,Attr:?u32,Ascore:?u32>>->
-                 ?log("!!!!!!!!!!!!!!!!!!!CliEventTankScore!!!!!!!!!!!!!!!~p",[{Uid,Score,Attr,Ascore}]),
 					fun_scene:update_fields(player, Uid, [{#player.score,Score}]),
                     fun_scene:update_fields(player, Attr, [{#player.score,Ascore}]);
-                _R->?log("!!!!!!!!!!!!!!!!!!!cliEvent!!!!!!!!!!!!!!!~p",[_R]),skip	
+                _->skip	
             end.
 
 die(Uid)->
