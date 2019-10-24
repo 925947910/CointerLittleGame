@@ -77,15 +77,15 @@ do_msg({login_game,{Uid,_Code,Game},Sid}) ->
 			OldNet;
 		_->#user_net{id=Uid}
 	end,
-	case load_user(Uid) of
-		#user_net{name=RName,sex=RSex,photo=RPhoto,coin=RCoin}->
+	case load_user(Uid,Game) of
+		#user_net{name=RName,sex=RSex,photo=RPhoto,coin=RCoin,skin=Skin}->
 			db:put_ets_data(user_net,NewNet#user_net{name=RName,sex=RSex,photo=RPhoto,coin=RCoin,sid=Sid,game=Game,online=?TRUE}),
 			gen_server:cast(Sid,{setConnState, ?USERCONNECTED,Uid}),
             fun_redis:in_game(Uid,Game,in),
-			{ok,Bin}=pt_writer:write(?RES_LOGIN,{?Btrue,RName,RSex,RPhoto,RCoin}),												
+			{ok,Bin}=pt_writer:write(?RES_LOGIN,{?Btrue,RName,RSex,RPhoto,RCoin,Skin}),												
 			?send(Sid,Bin);
 		_->
-			{ok,Bin}=pt_writer:write(?RES_LOGIN,{?Bfalse,"",0,"",0}),												
+			{ok,Bin}=pt_writer:write(?RES_LOGIN,{?Bfalse,"",0,"",0,0}),												
 			?send(Sid,Bin),
 			?discon(Sid,login_failed,500)
 	end;
@@ -173,8 +173,8 @@ get_onlines()->
 
 
 
-load_user(Uid)->
-	 Session=fun_redis:gen_session(Uid),
+load_user(Uid,Game)->
+	Session=fun_redis:gen_session(Uid),
 	case fun_redis:select_dirty_qp([["HMGET",Session,nick,sex,photo,coin]],?USER_DB) of  
 		[{ok,[BinName,BinSex,BinPhoto,BinCoin]}]when BinCoin=/=?UNDEFINED->
 			Coin=util:to_integer(BinCoin), 
@@ -182,7 +182,13 @@ load_user(Uid)->
 			Photo= util:to_binary(BinPhoto),
 			Name=  util:to_binary(BinName),
 			cache_user(Uid),
-			#user_net{id=Uid,name=Name,sex=Sex,photo=Photo,coin=Coin};
+			#static_game{item_key=ItemKey}=static_games:get_data(Game),
+			Key=fun_redis:gen_item(ItemKey,Uid),
+			Skin= case  fun_redis:select_dirty_qp([["HGET",Key,"currSkin"]], ?GAME_ITEM_DB) of  
+					  [{ok,BinSkin}] when BinSkin=/=?UNDEFINED->util:to_integer(BinSkin);
+					  _->0
+				  end , 
+			#user_net{id=Uid,name=Name,sex=Sex,photo=Photo,coin=Coin,skin=Skin};
 		_R->skip
 	end.
 

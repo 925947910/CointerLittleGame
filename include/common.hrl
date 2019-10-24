@@ -68,6 +68,7 @@
 -define(STATIC_DATA_DB,4).
 -define(USER_STATUS_DB,5).
 
+
 -define(EVENT_PAY,1).
 -define(EVENT_WIN,2).
 

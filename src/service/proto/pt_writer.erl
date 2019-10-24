@@ -9,8 +9,8 @@
 write(?PT_PING,_)->add_head(?PT_PING, <<>>);
 
 %% 2001
-write(?RES_LOGIN,{Result,Name,Sex,Photo,Coin}) ->
-	 add_head(?RES_LOGIN, << Result:?u8,?str(Name),Sex:?u8,?str(Photo),Coin:?u32>>);
+write(?RES_LOGIN,{Result,Name,Sex,Photo,Coin,Skin}) ->
+	 add_head(?RES_LOGIN, << Result:?u8,?str(Name),Sex:?u8,?str(Photo),Coin:?u32,Skin:?u8>>);
 
 %% 3001
 write(?PT_MATCHING,{GameId,Len,Time}) ->
