@@ -52,7 +52,7 @@ write(?PT_INIT_SNAKE_GAME,{GameId,Seed,Score,UserData}) ->
     UsersLen = length(ListBin),
     UsersBin = list_to_binary(ListBin),
 	 add_head(?PT_INIT_SNAKE_GAME,<<GameId:?u8,Seed:?u32,Score:?u32,UsersLen:?u16,UsersBin/binary>>);
-%% 3009
+
 write(?PT_INIT_TANK_GAME,{GameId,Seed,UserData}) ->
 	Fun=fun({Uid,Name,Skin,Score,Group})->  
 				<<Uid:?u32,?str(Name),Skin:?u8,Score:?u32,Group:?u8>>
@@ -61,6 +61,18 @@ write(?PT_INIT_TANK_GAME,{GameId,Seed,UserData}) ->
     UsersLen = length(ListBin),
     UsersBin = list_to_binary(ListBin),
 	 add_head(?PT_INIT_TANK_GAME,<<GameId:?u8,Seed:?u32,UsersLen:?u16,UsersBin/binary>>);
+%% 3010
+write(?PT_INIT_BOSSRUN_GAME,{GameId,Seed,UserData}) ->
+	Fun=fun({Uid,Name,Skin})->  
+				<<Uid:?u32,?str(Name),Skin:?u8>>
+		end,
+	ListBin = [Fun(D)||D<-UserData],
+    UsersLen = length(ListBin),
+    UsersBin = list_to_binary(ListBin),
+	 add_head(?PT_INIT_BOSSRUN_GAME,<<GameId:?u8,Seed:?u32,UsersLen:?u16,UsersBin/binary>>);
+
+
+
 %% 3004
 write(?PT_START_GAME,_) ->
 	 add_head(?PT_START_GAME,<<>>);

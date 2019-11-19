@@ -71,10 +71,11 @@
 
 -define(EVENT_PAY,1).
 -define(EVENT_WIN,2).
+-define(EVENT_DIG_MINERAL,10).
 
 -define(GAME_SNAKE,1).
 -define(GAME_TANK,2).
-
+-define(GAME_BOSSRUN,3).
 
 -define(GAME_INIT,1).
 -define(GAME_RUNING,2).
@@ -87,6 +88,7 @@
 -define(CliEventWin,5).
 -define(CliEventQuit,6).
 -define(CliEventTankScore,8).
+-define(CliEventBossRunOver,9).
 
 
 

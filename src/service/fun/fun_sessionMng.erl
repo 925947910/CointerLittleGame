@@ -5,7 +5,6 @@
 -define(ConnStatus,'ConnStatus').
 -define(ConnOpen,1).
 -define(ConnClose,0).
--define(MatchTime,5).
 -export([
 	do_init/0,
 	do_call/2,
@@ -232,9 +231,15 @@ match_game(Uid,?GAME_TANK,Opt,Coin,Sid)->
 		#tank_game{maxPlayer=Max,coin=NeedCoin} when Coin>=NeedCoin ->
 			do_match(Uid, ?GAME_TANK, Opt, Max, NeedCoin, Sid);
 		_->skip
-	end.	
-
+	end;	
+match_game(Uid,?GAME_BOSSRUN,Opt,Coin,Sid)->
+	case  bossRun_game:get_data(Opt) of  
+		#bossRun_game{maxPlayer=Max,coin=NeedCoin} when Coin>=NeedCoin ->
+			do_match(Uid, ?GAME_BOSSRUN, Opt, Max, NeedCoin, Sid);
+		_->skip
+	end.
 do_match(Uid,Game,Opt,Max,NeedCoin,Sid)->
+	#static_game{matchTime=MatchTime}=static_games:get_data(Game),
 	case get({matchs,Game,Opt}) of  
 		{Time,Users} when erlang:is_list(Users)->
 			Len=length(Users),
@@ -257,9 +262,9 @@ do_match(Uid,Game,Opt,Max,NeedCoin,Sid)->
 					?send(Sid,Bin)
 			end;
 		_R->
-			put({matchs,Game,Opt},{util:unixtime()+?MatchTime,[Uid]}),
+			put({matchs,Game,Opt},{util:unixtime()+MatchTime,[Uid]}),
 			update_ets(user_net, Uid,[{#user_net.matching,Opt}] ),
-			{ok,Bin}=pt_writer:write(?PT_MATCHING,{Opt,1,?MatchTime}),												
+			{ok,Bin}=pt_writer:write(?PT_MATCHING,{Opt,1,MatchTime}),												
 			?send(Sid,Bin)
 	end.	
 	
@@ -271,7 +276,9 @@ quit_match(Uid,Game,Opt,Sid)->
 			case  lists:member(Uid,Users) of  
 				?TRUE->
 					List=lists:delete(Uid, Users),
-							  put({matchs,Game,Opt},{Time,List}),
+					          if List==[]->erase({matchs,Game,Opt});
+								 true-> put({matchs,Game,Opt},{Time,List})
+							  end,
 							  Fun=fun(Uid)->  
 									{ok,Bin}=pt_writer:write(?PT_MATCHING,{Opt,length(List),Time-util:unixtime()}),												
 							        ?send(ets_fields(user_net,Uid,#user_net.sid),Bin)   

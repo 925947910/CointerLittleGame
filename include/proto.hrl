@@ -31,3 +31,4 @@
 -define(PT_QUIT_GAME,3008).
 
 -define(PT_INIT_TANK_GAME,3009).
+-define(PT_INIT_BOSSRUN_GAME,3010).

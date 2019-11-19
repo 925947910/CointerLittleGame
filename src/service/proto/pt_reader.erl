@@ -10,6 +10,7 @@ read(?REQ_LOGIN,<<Bin/binary>>) ->
         {Uid,B1}  = pt:read_int(Bin),
 		{Code,B2} = pt:read_string(B1),
 		{Game,_} = pt:read_byte(B2),
+		?log("!!!!!!!!!!!!!!!!!~p",[{Uid,Code,Game}]),
 {ok,pp_user,login_game,{Uid,Code,Game}};
 
 %% 1002
@@ -21,6 +22,7 @@ read(?REQ_MATCH_GAME,<<Bin/binary>>) ->
 %% 1003
 read(?REQ_QUIT_MATCH,<<Bin/binary>>) ->
 {ok,pp_user,quit_match,[]};
+
 %% 1004
 read(?REQ_SHOP_INFO,<<Bin/binary>>) ->
 	{Game,_} = pt:read_byte(Bin),

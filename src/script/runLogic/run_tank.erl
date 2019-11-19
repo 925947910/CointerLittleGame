@@ -15,7 +15,7 @@
 -export([init/4,cliEvent/1,process_win/2]).
 
 init(SceneId,Game,Opt,UserData)->
-	#tank_game{totalScore=Score,coin=Coin}=tank_game:get_data(Opt),
+	#tank_game{totalScore=Score,coin=Coin,start=Start,over=Over}=tank_game:get_data(Opt),
     db:put_obj_datas(game, 0, #game{id=SceneId,game=Game}),
 	Fun=fun({Uid,Name,Skin,Sid},Res)-> 
 				Group=if (length(Res) rem 2) ==0->1;
@@ -29,7 +29,6 @@ init(SceneId,Game,Opt,UserData)->
 	InitUsers=lists:foldl(Fun, [], UserData),
 	{ok,Bin}=pt_writer:write(?PT_INIT_TANK_GAME,{Opt,util:unixtime(),InitUsers}),		
 	fun_scene:broadCast(Bin, 0),
-	#tank_game{start=Start,over=Over}=tank_game:get_data(Opt),
 	{Start,Over}.
 
 
