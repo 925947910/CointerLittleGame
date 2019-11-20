@@ -92,4 +92,8 @@
 
 
 
+-define(UDP_INIT_CONN,1).
+
+
+
 

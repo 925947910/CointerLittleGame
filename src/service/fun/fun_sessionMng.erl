@@ -30,6 +30,15 @@ do_time(Now)->
 do_call(_,State) ->
 	{reply, nomatch, State}.
 
+do_msg({sceneUdp,Host,Port,Data}) ->
+	case Data  of  
+		<<_Len:?u32,Uid:?u32,_/binary >>->
+			case db:get_ets_data(user_net, Uid)  of  
+				[#user_net{scene=Scene,online=?TRUE}]when erlang:is_pid(Scene)->fun_scene:send_msg(Scene,{sceneUdp,Host,Port,Data});
+				 _R->skip
+			end;
+		_->skip
+	end;
 
 do_msg({sessionMsg,Uid,Msg}) ->
 	case db:get_ets_data(user_net, Uid)  of  
@@ -308,6 +317,11 @@ clear_match(Now)->
 						  #tank_game{minPlayer=Min,coin=NeedCoin}=tank_game:get_data(Opt),
 						  do_clear(?GAME_TANK, Opt, Now, Min, NeedCoin)
 				  end, TankOpts),
+    BossRunOpts=bossRun_game:get_ids(),
+	lists:foreach(fun(Opt)->  
+						  #bossRun_game{minPlayer=Min,coin=NeedCoin}=bossRun_game:get_data(Opt),
+						  do_clear(?GAME_BOSSRUN, Opt, Now, Min, NeedCoin)
+				  end, BossRunOpts),
 	ok.
 
 do_clear(Game,Opt,Now,Min,NeedCoin)->

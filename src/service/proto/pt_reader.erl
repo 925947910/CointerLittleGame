@@ -10,7 +10,6 @@ read(?REQ_LOGIN,<<Bin/binary>>) ->
         {Uid,B1}  = pt:read_int(Bin),
 		{Code,B2} = pt:read_string(B1),
 		{Game,_} = pt:read_byte(B2),
-		?log("!!!!!!!!!!!!!!!!!~p",[{Uid,Code,Game}]),
 {ok,pp_user,login_game,{Uid,Code,Game}};
 
 %% 1002

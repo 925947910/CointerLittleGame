@@ -15,7 +15,7 @@
 -define(PlayerIndexSid,4).
 -define(PlayerIndexOnline,5).
 -define(PlayerIndexDie,6).
-
+-define(PlayerIndexUdp,7).
 -export([on_init/1,on_close/2,do_time/1,do_msg/1,do_call/2,send_msg/2]).
 -export([broadCast/2,extractBin/3,append_frames/1,processFrames/0,sceneStatus/2]).
 -export([update_fields/3,get_fields/3]).
@@ -49,6 +49,19 @@ write_frames(FramesId,Actions)->
 		  _->put('FramesIds',[FramesId])
 	end,
 	put({frames,FramesId},Actions).
+
+
+do_msg({sceneUdp,Host,Port,Data})->
+	 SceneId=get_fields(game, 0,?GameIndexId),
+	case Data  of  
+		<<Len:?u32,Remain/binary >> when byte_size(Remain)==Len->
+             case Remain of  
+                 <<Uid:?u32,SceneId:?u32,?UDP_INIT_CONN:?u8>> ->
+                  update_fields(player, Uid, [{?PlayerIndexUdp,#user_udp{uid=Uid,ip=Host,port=Port}}]);
+                 _->skip
+             end;
+		_->skip
+	end;
 
 do_msg({reconn,Uid,Sid})->
 	update_fields(player, Uid, [{?PlayerIndexSid,Sid}]);
@@ -193,7 +206,10 @@ genFramesId()->
 
 
 append_frames(BinData)->
-	{FramesId,Actions}=get(currFrames),
+	{FramesId,Actions}=case get(currFrames)  of  
+						   {CurrFramesId,CurrActions}->{CurrFramesId,CurrActions};
+						   _->{genFramesId(),[]}
+					   end,
 	NewActions=Actions++[BinData],
 	put(currFrames,{FramesId,NewActions}).
 

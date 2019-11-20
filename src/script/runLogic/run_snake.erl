@@ -5,7 +5,7 @@
 -module(run_snake).
 -include("common.hrl").
 
--record(player,{id=0,name="",sid=0,online=true,die=false,score=0}).
+-record(player,{id=0,name="",sid=0,online=true,die=false,udp=0,score=0}).
 -record(game,{id=0,game=0,status=0,pricePool=0}).
 
 
@@ -27,6 +27,7 @@ init(SceneId,Game,Opt,UserData)->
 	Uids=lists:foldl(Fun, [], UserData),
 	{ok,Bin}=pt_writer:write(?PT_INIT_SNAKE_GAME,{Opt,util:unixtime(),Score,UserData}),		
 	fun_scene:broadCast(Bin, Uids),
+	put(initBin,Bin),
 	#snake_game{start=Start,over=Over}=snake_game:get_data(Opt),
 	{Start,Over}.
 

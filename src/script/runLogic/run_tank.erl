@@ -5,7 +5,7 @@
 -module(run_tank).
 -include("common.hrl").
 
--record(player,{id=0,name="",sid=0,online=true,die=false,score=0,group=0}).
+-record(player,{id=0,name="",sid=0,online=true,die=false,udp=0,score=0,group=0}).
 -record(game,{id=0,game=0,status=0}).
 
 
@@ -27,7 +27,8 @@ init(SceneId,Game,Opt,UserData)->
 				[{Uid,Name,Skin,Score,Group}|Res]
 		end,
 	InitUsers=lists:foldl(Fun, [], UserData),
-	{ok,Bin}=pt_writer:write(?PT_INIT_TANK_GAME,{Opt,util:unixtime(),InitUsers}),		
+	{ok,Bin}=pt_writer:write(?PT_INIT_TANK_GAME,{Opt,util:unixtime(),InitUsers}),	
+	put(initBin,Bin),
 	fun_scene:broadCast(Bin, 0),
 	{Start,Over}.
 
