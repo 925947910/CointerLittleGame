@@ -44,32 +44,32 @@ write(?RES_LOSED_FRAMES,{FramesId,Actions}) ->
 	BinData = list_to_binary(Actions),
 	add_head(?RES_LOSED_FRAMES,<<FramesId:?u32,Len:?u16,BinData/binary>>);
 %% 3003
-write(?PT_INIT_SNAKE_GAME,{GameId,Seed,Score,UserData}) ->
+write(?PT_INIT_SNAKE_GAME,{Game,SceneId,Opt,Seed,Score,UserData}) ->
 	Fun=fun({Uid,Name,Skin,_})->  
 				<<Uid:?u32,?str(Name),Skin:?u8>>
 		end,
 	ListBin = [Fun(D)||D<-UserData],
     UsersLen = length(ListBin),
     UsersBin = list_to_binary(ListBin),
-	 add_head(?PT_INIT_SNAKE_GAME,<<GameId:?u8,Seed:?u32,Score:?u32,UsersLen:?u16,UsersBin/binary>>);
+	 add_head(?PT_INIT_SNAKE_GAME,<<Game:?u8,SceneId:?u32,Opt:?u8,Seed:?u32,Score:?u32,UsersLen:?u16,UsersBin/binary>>);
 
-write(?PT_INIT_TANK_GAME,{GameId,Seed,UserData}) ->
+write(?PT_INIT_TANK_GAME,{Game,SceneId,Opt,Seed,UserData}) ->
 	Fun=fun({Uid,Name,Skin,Score,Group})->  
 				<<Uid:?u32,?str(Name),Skin:?u8,Score:?u32,Group:?u8>>
 		end,
 	ListBin = [Fun(D)||D<-UserData],
     UsersLen = length(ListBin),
     UsersBin = list_to_binary(ListBin),
-	 add_head(?PT_INIT_TANK_GAME,<<GameId:?u8,Seed:?u32,UsersLen:?u16,UsersBin/binary>>);
+	 add_head(?PT_INIT_TANK_GAME,<<Game:?u8,SceneId:?u32,Opt:?u8,Seed:?u32,UsersLen:?u16,UsersBin/binary>>);
 %% 3010
-write(?PT_INIT_BOSSRUN_GAME,{GameId,Seed,UserData}) ->
+write(?PT_INIT_BOSSRUN_GAME,{Game,SceneId,Opt,Seed,UserData}) ->
 	Fun=fun({Uid,Name,Skin})->  
 				<<Uid:?u32,?str(Name),Skin:?u8>>
 		end,
 	ListBin = [Fun(D)||D<-UserData],
     UsersLen = length(ListBin),
     UsersBin = list_to_binary(ListBin),
-	 add_head(?PT_INIT_BOSSRUN_GAME,<<GameId:?u8,Seed:?u32,UsersLen:?u16,UsersBin/binary>>);
+	 add_head(?PT_INIT_BOSSRUN_GAME,<<Game:?u8,SceneId:?u32,Opt:?u8,Seed:?u32,UsersLen:?u16,UsersBin/binary>>);
 
 
 

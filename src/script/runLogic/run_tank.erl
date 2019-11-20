@@ -27,7 +27,7 @@ init(SceneId,Game,Opt,UserData)->
 				[{Uid,Name,Skin,Score,Group}|Res]
 		end,
 	InitUsers=lists:foldl(Fun, [], UserData),
-	{ok,Bin}=pt_writer:write(?PT_INIT_TANK_GAME,{Opt,util:unixtime(),InitUsers}),	
+	{ok,Bin}=pt_writer:write(?PT_INIT_TANK_GAME,{Game,SceneId,Opt,util:unixtime(),InitUsers}),	
 	put(initBin,Bin),
 	fun_scene:broadCast(Bin, 0),
 	{Start,Over}.

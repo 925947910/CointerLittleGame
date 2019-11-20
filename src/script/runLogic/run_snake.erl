@@ -25,7 +25,7 @@ init(SceneId,Game,Opt,UserData)->
 				[Uid|Res]
 		end,
 	Uids=lists:foldl(Fun, [], UserData),
-	{ok,Bin}=pt_writer:write(?PT_INIT_SNAKE_GAME,{Opt,util:unixtime(),Score,UserData}),		
+	{ok,Bin}=pt_writer:write(?PT_INIT_SNAKE_GAME,{Game,SceneId,Opt,util:unixtime(),Score,UserData}),		
 	fun_scene:broadCast(Bin, Uids),
 	put(initBin,Bin),
 	#snake_game{start=Start,over=Over}=snake_game:get_data(Opt),
