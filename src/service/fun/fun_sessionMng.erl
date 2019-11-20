@@ -90,10 +90,13 @@ do_msg({login_game,{Uid,_Code,Game},Sid}) ->
 			db:put_ets_data(user_net,NewNet#user_net{name=RName,sex=RSex,photo=RPhoto,coin=RCoin,sid=Sid,game=Game,online=?TRUE}),
 			gen_server:cast(Sid,{setConnState, ?USERCONNECTED,Uid}),
             fun_redis:in_game(Uid,Game,in),
-			{ok,Bin}=pt_writer:write(?RES_LOGIN,{?Btrue,RName,RSex,RPhoto,RCoin,Skin}),												
+			InGame= if is_pid(NewNet#user_net.scene) ->?Btrue;
+						true->?Bfalse
+					 end,
+			{ok,Bin}=pt_writer:write(?RES_LOGIN,{?Btrue,RName,RSex,RPhoto,RCoin,Skin,InGame}),												
 			?send(Sid,Bin);
 		_->
-			{ok,Bin}=pt_writer:write(?RES_LOGIN,{?Bfalse,"",0,"",0,0}),												
+			{ok,Bin}=pt_writer:write(?RES_LOGIN,{?Bfalse,"",0,"",0,0,?Bfalse}),												
 			?send(Sid,Bin),
 			?discon(Sid,login_failed,500)
 	end;
