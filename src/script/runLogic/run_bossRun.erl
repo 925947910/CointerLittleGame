@@ -14,6 +14,7 @@
 %% ====================================================================
 -export([init/4,cliEvent/1,process_win/2]).
 
+
 init(SceneId,Game,Opt,UserData)->
 	#bossRun_game{totalScore=_Score,start=Start,over=Over}=bossRun_game:get_data(Opt),
     db:put_obj_datas(game, 0, #game{id=SceneId,game=Game}),
