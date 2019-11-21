@@ -88,12 +88,11 @@
 -define(CliEventWin,5).
 -define(CliEventQuit,6).
 -define(CliEventTankScore,8).
--define(CliEventBossRunOver,9).
 
 
 
 -define(UDP_INIT_CONN,1).
 
-
-
+-define(SOCKET_TCP,0).
+-define(SOCKET_UDP,1).
 

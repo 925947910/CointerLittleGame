@@ -29,25 +29,26 @@ init(SceneId,Game,Opt,UserData)->
 	InitUsers=lists:foldl(Fun, [], UserData),
 	{ok,Bin}=pt_writer:write(?PT_INIT_BOSSRUN_GAME,{Game,SceneId,Opt,util:unixtime(),InitUsers}),	
 	put(initBin,Bin),
-	fun_scene:broadCast(Bin, 0),
+	fun_scene:broadCast(?SOCKET_TCP,Bin, 0),
 	{Start,Over}.
 
 
 
 cliEvent(BinData)->
-	        case BinData  of  
-				<<?CliEventBossRunOver:?u8,Uid:?u32,Bin/binary>>->
-					over(Uid);
-                _->skip	
-            end.
+	case BinData  of  
+		<<?CliEventDie:?u8,Bin/binary>>->
+			{Uid,_}  = pt:read_int(Bin),
+			over(Uid);
+		_->skip	
+	end.
 
 
 over(Uid)->
 	case  db:get_obj_datas(player, Uid)  of  
 		  #player{die=?FALSE}->
 			 fun_scene:update_fields(player, Uid, [{#player.die,?TRUE}]),
-			 	Event={obj,[{"uid",Uid},{"E",?EVENT_DIG_MINERAL},{"game",?GAME_BOSSRUN},{"desc",unicode:characters_to_binary("斗币大咖跑挖矿", utf8)}]},
-	            fun_redis:user_event(Uid, [Event]),
+%% 			 	Event={obj,[{"uid",Uid},{"E",?EVENT_DIG_MINERAL},{"game",?GAME_BOSSRUN},{"desc",unicode:characters_to_binary("斗币大咖跑挖矿", utf8)}]},
+%% 	            fun_redis:user_event(Uid, [Event]),
 			 check_win();
 		  _->skip
 	end.
@@ -59,8 +60,7 @@ check_win()->
 	end.
 
 process_win(0,_)->
-    fun_scene:append_frames(<<?CliEventWin:?u8,0:?u32,0:?u32>>),
-    fun_scene:sceneStatus(?GAME_OVER, 0).
+    fun_scene:sceneStatus(?GAME_OVER, <<?CliEventWin:?u8,0:?u32,0:?u32>>).
 
 
 

@@ -17,21 +17,23 @@
 -define(PlayerIndexDie,6).
 -define(PlayerIndexUdp,7).
 -export([on_init/1,on_close/2,do_time/1,do_msg/1,do_call/2,send_msg/2]).
--export([broadCast/2,extractBin/3,append_frames/1,processFrames/0,sceneStatus/2]).
+-export([broadCast/3,extractBin/3,append_frames/1,processFrames/0,sceneStatus/2]).
 -export([update_fields/3,get_fields/3]).
 on_init({SceneId,GameId,Opt,UserData})->
 	{Start,Over}= mod_run(init, [SceneId,GameId,Opt,UserData]),
 	{ok,Bin}=pt_writer:write(?PT_START_GAME,[]),
 	erlang:start_timer(Start, self(),{?MODULE,sceneStatus,[?GAME_RUNING,Bin]}),
-	erlang:start_timer(Over, self(),{?MODULE,sceneStatus,[?GAME_OVER,0]}).
+	erlang:start_timer(Over, self(),{?MODULE,sceneStatus,[?GAME_OVER,<<>>]}).
 
 on_close(Id,CloseReason) -> 
 	fun_sceneMng:send_msg({scene_del,Id,CloseReason}).
 	
 sceneStatus(?GAME_RUNING,Bin)->	
-	broadCast(Bin,0),
+	broadCast(?SOCKET_TCP,Bin,0),
 	update_fields(game, 0, [{?GameIndexStatus,?GAME_RUNING}]);
-sceneStatus(?GAME_OVER,_)->	
+
+sceneStatus(?GAME_OVER,Bin)->	
+	append_frames(Bin),
 	processFrames(),
 	update_fields(game, 0, [{?GameIndexStatus,?GAME_OVER}]).
 
@@ -56,7 +58,7 @@ do_msg({sceneUdp,Host,Port,Data})->
 	case Data  of  
 		<<Len:?u32,Remain/binary >> when byte_size(Remain)==Len->
              case Remain of  
-                 <<Uid:?u32,SceneId:?u32,?UDP_INIT_CONN:?u8>> ->
+                 <<Uid:?u32,SceneId:?u32,?UDP_INIT_CONN:?u8>>->
                   update_fields(player, Uid, [{?PlayerIndexUdp,#user_udp{uid=Uid,ip=Host,port=Port}}]);
                  _->skip
              end;
@@ -70,7 +72,7 @@ do_msg({losed_frames,FramesId,Uid}) ->
 	 case get({frames,FramesId})  of  
 		 Actions when erlang:is_list(Actions)->
 			 {ok,Bin}=pt_writer:write(?RES_LOSED_FRAMES,{FramesId,Actions}),
-			 broadCast(Bin, Uid);
+			 broadCast(?SOCKET_TCP,Bin, Uid);
 		 _->skip
 	 end;
 do_msg({cliAction,BinData}) ->
@@ -125,7 +127,7 @@ send_msg(Sid,Msg)->
 
 
 
-send_broadCast(Users,Bin)->
+send_broadCast(?SOCKET_TCP,Users,Bin)->
 	Fun=fun(Player)-> 
 				Uid=element(?PlayerIndexId, Player),
                 Sid=element(?PlayerIndexSid, Player),
@@ -135,31 +137,42 @@ send_broadCast(Users,Bin)->
 						?broadCast(Sid,Uid,Bin);
 					_->skip
 				end	  end,
+	lists:foreach(Fun, Users);
+send_broadCast(?SOCKET_UDP,Users,Bin)->
+	Fun=fun(Player)-> 
+				case element(?PlayerIndexOnline, Player) of 
+					?TRUE ->
+						UdpInfo=element(?PlayerIndexUdp, Player),
+						?broadCast(UdpInfo#user_udp{data=Bin});
+					_->skip
+				end	  end,
 	lists:foreach(Fun, Users).
-broadCast(Bin,0)->
+
+
+broadCast(Type,Bin,0)->
 	case  db:get_class_objs(player) of  
 		Users  when  erlang:is_list(Users)->
-			send_broadCast(Users, Bin);
+			send_broadCast(Type,Users, Bin);
 		_->skip
 	end;
-broadCast(Bin,Uid)when erlang:is_integer(Uid)->
+broadCast(Type,Bin,Uid)when erlang:is_integer(Uid)->
 	case  db:get_obj_datas(player, Uid)  of  
 		User when erlang:is_tuple(User)->
-			send_broadCast([User], Bin);
+			send_broadCast(Type,[User], Bin);
 		_->skip
 	end;
-broadCast(Bin,Uids)when erlang:is_list(Uids)->
+broadCast(Type,Bin,Uids)when erlang:is_list(Uids)->
 	Fun= fun(Uid,Res)-> 
 				 case  db:get_obj_datas(player, Uid)  of  
 					 User when erlang:is_tuple(User)->
 						 [User|Res];
 					 _->Res
 				 end  end,
-	send_broadCast(lists:foldl(Fun, [], Uids), Bin);
-broadCast(Bin,Fun)->
+	send_broadCast(Type,lists:foldl(Fun, [], Uids), Bin);
+broadCast(Type,Bin,Fun)->
 	case  db:filter_class_objs(player,Fun)  of  
 		Receivers  when  erlang:is_list(Receivers)->
-			send_broadCast(Receivers, Bin);
+			send_broadCast(Type,Receivers, Bin);
 		_->skip
 	end.
 
@@ -224,7 +237,7 @@ processFrames()->
 			case get(currFrames)  of  
 				{FramesId,Actions}->
 					{ok,Bin}=pt_writer:write(?PT_SYNC_FRAMES,{FramesId,Actions}),
-					broadCast(Bin, 0),
+					broadCast(?SOCKET_UDP,Bin, 0),
 					write_frames(FramesId, Actions);
 				_->skip	
 			end,

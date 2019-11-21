@@ -32,7 +32,10 @@
 -define(RESORT,false).
 -endif.
 
+-define(broadCast(Data), tool:broadCast(Data)).
+
 -define(broadCast(Sid,Uid,Data), tool:broadCast(Sid,Uid,Data)).
+
 -define(send(Sid, Data), tool:send_packet(Sid, Data)).
 -define(sends(Sid, Data), tool:send_packets(Sid, Data)).
 -define(send_world(Type,Msg), tool:send_to_world(Type, Msg)).

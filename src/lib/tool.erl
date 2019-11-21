@@ -1,7 +1,7 @@
 -module(tool).
 -include("common.hrl").
 -export([send_packet/2, send_packets/2, send_to_world/2,test/1, for/5,sys_msg/2,escape_uri/1,
-		 broadCast/3,unescape_string/1,checkstr/0,range/1,range/2,range/3,time/0,boolean2Num/1]).
+		 broadCast/3,broadCast/1,unescape_string/1,checkstr/0,range/1,range/2,range/3,time/0,boolean2Num/1]).
 
 
 
@@ -53,7 +53,9 @@ boolean(A,A1,Dis)	->
 		 true -> 0
 	end.
 
-
+broadCast(#user_udp{ip=Host,port=Port,data=Data}) ->
+	fun_udpServer:send_msg({send, Host, Port,Data}).
+   
 broadCast(Sid,Uid,Data) ->
     case is_pid(Sid) of
         true ->

@@ -29,7 +29,7 @@ init(SceneId,Game,Opt,UserData)->
 	InitUsers=lists:foldl(Fun, [], UserData),
 	{ok,Bin}=pt_writer:write(?PT_INIT_TANK_GAME,{Game,SceneId,Opt,util:unixtime(),InitUsers}),	
 	put(initBin,Bin),
-	fun_scene:broadCast(Bin, 0),
+	fun_scene:broadCast(?SOCKET_TCP,Bin, 0),
 	{Start,Over}.
 
 
@@ -74,8 +74,7 @@ process_win(Group,Winners)->
 	ListBin=lists:map(Fun, Winners),
     UsersLen = length(ListBin),
     UsersBin = list_to_binary(ListBin),	
-    fun_scene:append_frames(<<?CliEventWin:?u8,Group:?u8,UsersLen:?u16,UsersBin/binary>>),
-    fun_scene:sceneStatus(?GAME_OVER, 0).
+    fun_scene:sceneStatus(?GAME_OVER,<<?CliEventWin:?u8,Group:?u8,UsersLen:?u16,UsersBin/binary>>).
 
 
 

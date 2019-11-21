@@ -26,7 +26,7 @@ init(SceneId,Game,Opt,UserData)->
 		end,
 	Uids=lists:foldl(Fun, [], UserData),
 	{ok,Bin}=pt_writer:write(?PT_INIT_SNAKE_GAME,{Game,SceneId,Opt,util:unixtime(),Score,UserData}),		
-	fun_scene:broadCast(Bin, Uids),
+	fun_scene:broadCast(?SOCKET_TCP,Bin, Uids),
 	put(initBin,Bin),
 	#snake_game{start=Start,over=Over}=snake_game:get_data(Opt),
 	{Start,Over}.
@@ -64,8 +64,7 @@ check_win()->
 	end.
 
 process_win(0,_)->
-    fun_scene:append_frames(<<?CliEventWin:?u8,0:?u32,0:?u32>>),
-    fun_scene:sceneStatus(?GAME_OVER, 0);
+    fun_scene:sceneStatus(?GAME_OVER, <<?CliEventWin:?u8,0:?u32,0:?u32>>);
 process_win(Uid,Score)-> 
 	#game{game=GameId,pricePool=PricePool,status=?GAME_RUNING}=db:get_obj_datas(game, 0),
 	#snake_game{totalScore=TotalScore}=snake_game:get_data(GameId),
@@ -73,8 +72,8 @@ process_win(Uid,Score)->
 	Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_SNAKE},{"desc",unicode:characters_to_binary("game_win", utf8)}]},
 	fun_redis:user_event(Uid, [Event]),
 	
-	fun_scene:append_frames(<<?CliEventWin:?u8,Uid:?u32,Price:?u32>>),
-    fun_scene:sceneStatus(?GAME_OVER, 0).
+	
+    fun_scene:sceneStatus(?GAME_OVER, <<?CliEventWin:?u8,Uid:?u32,Price:?u32>>).
 
 
 
