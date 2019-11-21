@@ -88,7 +88,6 @@
 -define(CliEventWin,5).
 -define(CliEventQuit,6).
 -define(CliEventTankScore,8).
--define(CliEventBossRunOver,9).
 
 
 

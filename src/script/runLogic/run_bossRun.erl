@@ -35,11 +35,12 @@ init(SceneId,Game,Opt,UserData)->
 
 
 cliEvent(BinData)->
-	        case BinData  of  
-				<<?CliEventBossRunOver:?u8,Uid:?u32,Bin/binary>>->
-					over(Uid);
-                _->skip	
-            end.
+	case BinData  of  
+		<<?CliEventDie:?u8,Bin/binary>>->
+			{Uid,_}  = pt:read_int(Bin),
+			over(Uid);
+		_->skip	
+	end.
 
 
 over(Uid)->
