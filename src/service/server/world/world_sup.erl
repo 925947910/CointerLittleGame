@@ -14,7 +14,7 @@ init([]) ->
                 {sceneMng,  {world_svr,start_link,[sceneMng]},permanent, 5000, worker, [world_svr]},			   
 			  	{sessionMng, {world_svr, start_link, [sessionMng]}, permanent, 5000, worker, [world_svr]},
 %% 				{mysqlConn, {world_svr, start_link, [mysqlConn]}, permanent, 5000, worker, [world_svr]},
-                {udpServer, {world_svr, start_link, [udpServer]}, permanent, 5000, worker, [world_svr]},
+%%                 {udpServer, {world_svr, start_link, [udpServer]}, permanent, 5000, worker, [world_svr]},
 				{redisConn, {world_svr, start_link, [redisConn]}, permanent, 5000, worker, [world_svr]},
 			    {shopMall, {world_svr, start_link, [shopMall]}, permanent, 5000, worker, [world_svr]}
 			

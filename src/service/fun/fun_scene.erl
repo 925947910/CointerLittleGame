@@ -103,7 +103,7 @@ quit_game(Uid)->
 	end.
 
 off_line(Uid)->
-	case get_fields(player, Uid, ?PlayerIndexOnline)   of  
+	case get_fields(player, Uid, ?PlayerIndexOnline) of  
 		    ?TRUE->
 			update_fields(player, Uid, [{?PlayerIndexOnline,?FALSE}]),
 			append_frames(<<?CliEventOffLine:?u8,Uid:?u32>>),

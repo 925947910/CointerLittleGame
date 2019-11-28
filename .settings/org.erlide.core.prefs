@@ -2,7 +2,6 @@ backend_version=18.0
 compiler/compressed=false
 compiler/debug_info=true
 compiler/encrypt_debug_info=false
-compiler/raw={d,debug}
 compiler/warn_deprecated_function=true
 compiler/warn_export_all=false
 compiler/warn_export_vars=false
