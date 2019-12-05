@@ -19,7 +19,10 @@
 -export([on_init/1,on_close/2,do_time/1,do_msg/1,do_call/2,send_msg/2]).
 -export([broadCast/2,extractBin/3,append_frames/1,processFrames/0,sceneStatus/2]).
 -export([update_fields/3,get_fields/3]).
-on_init({SceneId,GameId,Opt,UserData})->
+-export([gameCleanRec/2,get_recCode/0]).
+on_init({SceneId,GameId,Opt,UserData,RecCode})->
+	save_recCode(RecCode),
+	gameInitRec(GameId),
 	{Start,Over}= mod_run(init, [SceneId,GameId,Opt,UserData]),
 	{ok,Bin}=pt_writer:write(?PT_START_GAME,[]),
 	erlang:start_timer(Start, self(),{?MODULE,sceneStatus,[?GAME_RUNING,Bin]}),
@@ -237,3 +240,17 @@ processFrames()->
 mod_run(Fun,Args)->
 	Mod=get(run_mod),
 	apply(Mod, Fun, Args).
+
+gameInitRec(GameId)->
+Event={obj,[{"E",?EVENT_INIT_GAME},{"game",GameId},{"recCode",get(recCode)},{"time",util:unixtime()}]},
+	fun_redis:add_event(GameId, [Event]).
+
+gameCleanRec(GameId,ResultStr)->
+	 Event={obj,[{"E",?EVENT_CLEAN_GAME},{"game",GameId},{"recCode",get(recCode)},{"gameResult",ResultStr},{"time",util:unixtime()}]},
+     fun_redis:add_event(GameId, [Event]).
+
+save_recCode(Code)->
+put(recCode,Code).
+get_recCode()->
+get(recCode).
+

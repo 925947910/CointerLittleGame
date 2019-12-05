@@ -285,7 +285,7 @@ to_list(_) ->
 f2s(N) when is_integer(N) ->
     integer_to_list(N) ++ ".00";
 f2s(F) when is_float(F) ->
-    [A] = io_lib:format("~.2f", [F]),
+    A = io_lib:format("~.2f", [F]),
 	A.
 
 len_pos( X,[ H|T ] ) when X =:=H -> length(T)+1;

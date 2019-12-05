@@ -22,8 +22,8 @@ init(SceneId,Game,Opt,UserData)->
 						 true->2
 					  end,
 				db:put_obj_datas(player, Uid, #player{id=Uid,name=Name,sid=Sid,score=Score,group=Group}),
-				Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",Coin},{"game",?GAME_TANK},{"desc",unicode:characters_to_binary("start_game", utf8)}]},
-				fun_redis:user_event(Uid, [Event]),
+				Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",Coin},{"game",?GAME_TANK},{"desc",fun_scene:get_recCode()}]},
+				fun_redis:add_event(Uid, [Event]),
 				[{Uid,Name,Skin,Score,Group}|Res]
 		end,
 	InitUsers=lists:foldl(Fun, [], UserData),
@@ -67,13 +67,22 @@ check_win()->
 process_win(Group,Winners)-> 
 	Fun= fun(#player{id=Uid,score=Score})->  
 			Price=Score,	 
-			Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_TANK},{"desc",unicode:characters_to_binary("game_win", utf8)}]},
-	        fun_redis:user_event(Uid, [Event]),
+			Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_TANK},{"desc",fun_scene:get_recCode()}]},
+	        fun_redis:add_event(Uid, [Event]),
 			<<Uid:?u32,Price:?u32>>
 		 end,
 	ListBin=lists:map(Fun, Winners),
     UsersLen = length(ListBin),
     UsersBin = list_to_binary(ListBin),	
+
+    F1= fun(#player{id=Uid,name=Name,score=Score})->  
+            Price=Score,	 
+			{obj,[{util:to_binary("胜利者Id:"),Uid},{util:to_binary("胜利者:"),Name},{util:to_binary("得分:"),Score},{util:to_binary("奖励:"),util:to_list(Price/100)}]}
+		 end,
+    WinGroup={obj,[{util:to_binary("胜利阵营:"),Group},{util:to_binary("胜利玩家:"),lists:map(F1, Winners)}]},
+	Str=rfc4627:encode({obj,[{util:to_binary("对局详情"),WinGroup}]}),
+	fun_scene:gameCleanRec(?GAME_TANK, Str),
+
     fun_scene:append_frames(<<?CliEventWin:?u8,Group:?u8,UsersLen:?u16,UsersBin/binary>>),
     fun_scene:sceneStatus(?GAME_OVER, 0).
 

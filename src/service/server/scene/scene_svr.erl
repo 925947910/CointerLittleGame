@@ -15,11 +15,11 @@ stop() ->
      
 
 
-init({SceneId,GameId,Opt,UserData}) ->
+init({SceneId,GameId,Opt,UserData,RecCode}) ->
 	try   
 		#static_game{mod=Mod}=static_games:get_data(GameId),
 		put(run_mod,Mod),
-		fun_scene:on_init({SceneId,GameId,Opt,UserData})
+		fun_scene:on_init({SceneId,GameId,Opt,UserData,RecCode})
 	catch 
 		E:R:StackTrace -> ?log_error("scene init error E=~p,R=~p,stack=~p",[E,R,StackTrace])
 	end,

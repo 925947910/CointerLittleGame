@@ -184,11 +184,9 @@ get_onlines()->
 load_user(Uid,Game)->
 	Session=fun_redis:gen_session(Uid),
 	case fun_redis:select_dirty_qp([["HMGET",Session,nick,sex,photo,coin]],?USER_DB) of  
-		[{ok,[BinName,BinSex,BinPhoto,BinCoin]}]when BinCoin=/=?UNDEFINED->
+		[{ok,[Name,BinSex,Photo,BinCoin]}]when BinCoin=/=?UNDEFINED->
 			Coin=util:to_integer(BinCoin), 
 			Sex=util:to_integer(BinSex), 
-			Photo= util:to_binary(BinPhoto),
-			Name=  util:to_binary(BinName),
 			cache_user(Uid),
 			#static_game{item_key=ItemKey}=static_games:get_data(Game),
 			Key=fun_redis:gen_item(ItemKey,Uid),

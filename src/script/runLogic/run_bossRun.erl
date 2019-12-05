@@ -22,12 +22,10 @@ init(SceneId,Game,Opt,UserData)->
 						 true->2
 					  end,
 				db:put_obj_datas(player, Uid, #player{id=Uid,name=Name,sid=Sid,group=Group}),
-%% 				Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",Coin},{"game",?GAME_BOSSRUN},{"desc",unicode:characters_to_binary("start_game", utf8)}]},
-%% 				fun_redis:user_event(Uid, [Event]),
 				[{Uid,Name,Skin}|Res]
 		end,
 	InitUsers=lists:foldl(Fun, [], UserData),
-	{ok,Bin}=pt_writer:write(?PT_INIT_BOSSRUN_GAME,{Opt,util:unixtime(),InitUsers}),	
+	{ok,Bin}=pt_writer:write(?PT_INIT_BOSSRUN_GAME,{Opt,util:unixtime(),fun_scene:get_recCode(),InitUsers}),	
 	put(initBin,Bin),
 	fun_scene:broadCast(Bin, 0),
 	{Start,Over}.
@@ -47,8 +45,6 @@ over(Uid)->
 	case  db:get_obj_datas(player, Uid)  of  
 		  #player{die=?FALSE}->
 			 fun_scene:update_fields(player, Uid, [{#player.die,?TRUE}]),
-			 	Event={obj,[{"uid",Uid},{"E",?EVENT_DIG_MINERAL},{"game",?GAME_BOSSRUN},{"desc",unicode:characters_to_binary("斗币大咖跑挖矿", utf8)}]},
-	            fun_redis:user_event(Uid, [Event]),
 			 check_win();
 		  _->skip
 	end.

@@ -20,8 +20,8 @@ init(SceneId,Game,Opt,UserData)->
     db:put_obj_datas(game, 0, #game{id=SceneId,game=Game,pricePool=(Coin*PlayerNum*8) div 10}),
 	Fun=fun({Uid,Name,_Skin,Sid},Res)-> 
 				db:put_obj_datas(player, Uid, #player{id=Uid,name=Name,sid=Sid}),
-				Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",Coin},{"game",?GAME_SNAKE},{"desc",unicode:characters_to_binary("start_game", utf8)}]},
-				fun_redis:user_event(Uid, [Event]),
+				Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",Coin},{"game",?GAME_SNAKE},{"desc",fun_scene:get_recCode()}]},
+				fun_redis:add_event(Uid, [Event]),
 				[Uid|Res]
 		end,
 	Uids=lists:foldl(Fun, [], UserData),
@@ -64,20 +64,22 @@ check_win()->
 	end.
 
 process_win(0,_)->
+	Str=rfc4627:encode({obj,[{util:to_binary("对局详情"),util:to_binary("平局")}]}),
+	fun_scene:gameCleanRec(?GAME_SNAKE, Str),
     fun_scene:append_frames(<<?CliEventWin:?u8,0:?u32,0:?u32>>),
     fun_scene:sceneStatus(?GAME_OVER, 0);
+
 process_win(Uid,Score)-> 
 	#game{game=GameId,pricePool=PricePool,status=?GAME_RUNING}=db:get_obj_datas(game, 0),
 	#snake_game{totalScore=TotalScore}=snake_game:get_data(GameId),
 	Price=util:floor((Score/TotalScore)*(PricePool*3/8))+util:floor(PricePool*5/8),
-	Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_SNAKE},{"desc",unicode:characters_to_binary("game_win", utf8)}]},
-	fun_redis:user_event(Uid, [Event]),
-	
+	Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_SNAKE},{"desc",fun_scene:get_recCode()}]},
+	fun_redis:add_event(Uid, [Event]),
+	Name=fun_scene:get_fields(player, Uid, #player.name),
+	Winners={obj,[{util:to_binary("胜利者Id"),Uid},{util:to_binary("胜利者"),Name},{util:to_binary("得分"),Score},{"奖励",util:to_binary(Price/100)}]},
+	Str=rfc4627:encode({obj,[{util:to_binary("对局详情"),Winners}]}),
+	fun_scene:gameCleanRec(?GAME_SNAKE, Str),
 	fun_scene:append_frames(<<?CliEventWin:?u8,Uid:?u32,Price:?u32>>),
     fun_scene:sceneStatus(?GAME_OVER, 0).
-
-
-
-
 
 

@@ -6,7 +6,7 @@
 -include("common.hrl").
 -export([get_conn/1,return_conn/2]).
 -export([lock/2,unlock/2,dirty_qp/1,select_dirty_qp/2]).
--export([user_event/2,in_game/3,gen_session/1,gen_item/2]).
+-export([add_event/2,in_game/3,gen_session/1,gen_item/2]).
 
 -define(RedisTimeOut,5000).
 -define(RedisLockSecound,10).
@@ -102,15 +102,15 @@ unlock(Key,DB)->select_dirty_qp([["DEL",util:to_list(Key)++"_lock"]],DB).
 %%   Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",GameId},{"desc","play_game"}]},
 %%   Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",Coin},{"game","GameId"},{"desc","play_game"}]},
 %%   Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",Coin},{"game","GameId"},{"desc","buy_skin"}]},
-user_event(Uid,Events) when Events=/=[]->
-	Distributor="Distributor:"++util:to_list(Uid rem 10),
-	Queue="Event:"++util:to_list(Uid),
+add_event(Id,Events) when Events=/=[]->
+	Distributor="Distributor:"++util:to_list(Id rem 10),
+	Queue="Event:"++util:to_list(Id),
 	Fun=fun(Obj)->
 				Data=rfc4627:encode(Obj),
 				["RPUSH",Queue,Data]
 		end,
 	Args=lists:map(Fun, Events),
-	Event=[["RPUSH",Distributor,Uid]]++Args,
+	Event=[["RPUSH",Distributor,Id]]++Args,
 	fun_redis:select_dirty_qp(Event,?EVENT_DB).
 
 in_game(Uid,GameId,InOrOut)->

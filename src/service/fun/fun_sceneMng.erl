@@ -28,10 +28,12 @@ do_info(_Info) -> ok.
 
   do_msg({create_game,GameId,Opt,UserData})-> 
 	  SceneId=genSceneId(),
+	  SvrNum=get(svr_num),
+	  RecCode=util:to_binary(util:to_list(SvrNum)++util:to_list(util:unixtime())++util:to_list(SceneId)),
 	  Fun=fun({Uid,_,_,_})-> Uid end,
 	  Uids=lists:map(Fun, UserData),
 	  db:put_ets_data(scene, #scene{id=SceneId,hid=0,owner=0,game=GameId,players=Uids}),
-	  scene_sup:add({SceneId,GameId,Opt,UserData});
+	  scene_sup:add({SceneId,GameId,Opt,UserData,RecCode});
 
   do_msg({scene_add,SceneId,SceneHid})-> 
 	  case db:get_ets_data(scene,SceneId) of  

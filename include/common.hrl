@@ -53,7 +53,7 @@
 -define(CONNECTED, 1).
 -define(SHAKED, 2).
 -define(USERCONNECTED, 3).
-‰Œ
+
 
 
 -define(HTTP_SVR_PORT,8889).
@@ -71,8 +71,10 @@
 
 -define(EVENT_PAY,1).
 -define(EVENT_WIN,2).
--define(EVENT_DIG_MINERAL,10).
 
+-define(EVENT_DIG_MINERAL,10).
+-define(EVENT_INIT_GAME,14).
+-define(EVENT_CLEAN_GAME,15).
 -define(GAME_SNAKE,1).
 -define(GAME_TANK,2).
 -define(GAME_BOSSRUN,3).
