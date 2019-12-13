@@ -12,7 +12,7 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([init/4,cliEvent/1,process_win/2]).
+-export([init/4,cliEvent/1,process_win/2,test/1]).
 
 init(SceneId,Game,Opt,UserData)->
 	#snake_game{totalScore=Score,coin=Coin}=snake_game:get_data(Opt),
@@ -64,7 +64,7 @@ check_win()->
 	end.
 
 process_win(0,_)->
-	Str=rfc4627:encode({obj,[{util:to_binary("对局详情"),util:to_binary("平局")}]}),
+	Str=rfc4627:encode({obj,[{"对局详情","平局"}]}),
 	fun_scene:gameCleanRec(?GAME_SNAKE, Str),
     fun_scene:append_frames(<<?CliEventWin:?u8,0:?u32,0:?u32>>),
     fun_scene:sceneStatus(?GAME_OVER, 0);
@@ -76,10 +76,12 @@ process_win(Uid,Score)->
 	Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_SNAKE},{"desc",fun_scene:get_recCode()}]},
 	fun_redis:add_event(Uid, [Event]),
 	Name=fun_scene:get_fields(player, Uid, #player.name),
-	Winners={obj,[{util:to_binary("胜利者Id"),Uid},{util:to_binary("胜利者"),Name},{util:to_binary("得分"),Score},{"奖励",util:to_binary(Price/100)}]},
-	Str=rfc4627:encode({obj,[{util:to_binary("对局详情"),Winners}]}),
-	fun_scene:gameCleanRec(?GAME_SNAKE, Str),
+	Winners={obj,[{"胜利者Id",Uid},{"胜利者",Name},{"得分",Score},{"奖励",util:to_binary(Price/100)}]},
+	Str=rfc4627:encode({obj,[{"对局详情",Winners}]}),
+	fun_scene:gameCleanRec(?GAME_SNAKE, util:to_binary(Str)),
 	fun_scene:append_frames(<<?CliEventWin:?u8,Uid:?u32,Price:?u32>>),
     fun_scene:sceneStatus(?GAME_OVER, 0).
 
-
+test(Key)->
+	Str=rfc4627:encode({obj,[{"对局详情",<<"">>}]}),
+	fun_redis:select_dirty_qp([["set",Key,Str]], 10).

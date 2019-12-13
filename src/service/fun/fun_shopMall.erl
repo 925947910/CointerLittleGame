@@ -78,7 +78,7 @@ do_msg({shop_buy,Uid,Game,ItemId,Sid})  ->
 							   _->0
 						   end,
 					if  Coin>NeedCoin->
-							Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",NeedCoin},{"game",Game},{"desc",Desc}]},
+							Event={obj,[{"uid",Uid},{"E",?EVENT_PAY},{"pay",NeedCoin},{"game",Game},{"desc",util:to_binary(Desc)}]},
 							fun_redis:add_event(Uid, [Event]),
 							NewItems=rfc4627:encode(Items++[ItemId]),
 							fun_redis:select_dirty_qp([["HSET",Key,Field,NewItems]], ?GAME_ITEM_DB), 

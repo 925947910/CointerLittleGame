@@ -78,7 +78,7 @@
 -define(GAME_SNAKE,1).
 -define(GAME_TANK,2).
 -define(GAME_BOSSRUN,3).
-
+-define(GAME_PAOPAODAN,4).
 -define(GAME_INIT,1).
 -define(GAME_RUNING,2).
 -define(GAME_OVER,3).

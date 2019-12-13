@@ -77,11 +77,11 @@ process_win(Group,Winners)->
 
     F1= fun(#player{id=Uid,name=Name,score=Score})->  
             Price=Score,	 
-			{obj,[{util:to_binary("胜利者Id:"),Uid},{util:to_binary("胜利者:"),Name},{util:to_binary("得分:"),Score},{util:to_binary("奖励:"),util:to_list(Price/100)}]}
+			{obj,[{"胜利者Id:",Uid},{"胜利者:",Name},{"得分:",Score},{"奖励:",util:to_binary(Price/100)}]}
 		 end,
-    WinGroup={obj,[{util:to_binary("胜利阵营:"),Group},{util:to_binary("胜利玩家:"),lists:map(F1, Winners)}]},
-	Str=rfc4627:encode({obj,[{util:to_binary("对局详情"),WinGroup}]}),
-	fun_scene:gameCleanRec(?GAME_TANK, Str),
+    WinGroup={obj,[{"胜利阵营:",Group},{"胜利玩家:",lists:map(F1, Winners)}]},
+	Str=rfc4627:encode({obj,[{"对局详情",WinGroup}]}),
+	fun_scene:gameCleanRec(?GAME_TANK, util:to_binary(Str)),
 
     fun_scene:append_frames(<<?CliEventWin:?u8,Group:?u8,UsersLen:?u16,UsersBin/binary>>),
     fun_scene:sceneStatus(?GAME_OVER, 0).

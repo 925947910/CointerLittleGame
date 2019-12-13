@@ -244,6 +244,12 @@ match_game(Uid,?GAME_BOSSRUN,Opt,Coin,Sid)->
 		#bossRun_game{maxPlayer=Max,coin=NeedCoin} when Coin>=NeedCoin ->
 			do_match(Uid, ?GAME_BOSSRUN, Opt, Max, NeedCoin, Sid);
 		_->skip
+	end;
+match_game(Uid,?GAME_PAOPAODAN,Opt,Coin,Sid)->
+	case  paopaoDan_game:get_data(Opt) of  
+		#paopaoDan_game{maxPlayer=Max,coin=NeedCoin} when Coin>=NeedCoin ->
+			do_match(Uid, ?GAME_PAOPAODAN, Opt, Max, NeedCoin, Sid);
+		_->skip
 	end.
 do_match(Uid,Game,Opt,Max,NeedCoin,Sid)->
 	#static_game{matchTime=MatchTime}=static_games:get_data(Game),
@@ -320,6 +326,11 @@ clear_match(Now)->
 						  #bossRun_game{minPlayer=Min,coin=NeedCoin}=bossRun_game:get_data(Opt),
 						  do_clear(?GAME_BOSSRUN, Opt, Now, Min, NeedCoin)
 				  end, BossRunOpts),
+	    PaopaoDanOpts=paopaoDan_game:get_ids(),
+	lists:foreach(fun(Opt)->  
+						  #paopaoDan_game{minPlayer=Min,coin=NeedCoin}=paopaoDan_game:get_data(Opt),
+						  do_clear(?GAME_PAOPAODAN, Opt, Now, Min, NeedCoin)
+				  end, PaopaoDanOpts),
 	ok.
 
 do_clear(Game,Opt,Now,Min,NeedCoin)->
