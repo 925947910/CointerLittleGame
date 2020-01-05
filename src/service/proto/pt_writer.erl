@@ -14,9 +14,11 @@ write(?RES_LOGIN,{Result,Name,Sex,Photo,Coin,Skin}) ->
 
 %% 3001
 write(?PT_MATCHING,{GameId,Len,Time}) ->
+	?log("PT_MATCHING~p",[{GameId,Len,Time}]),
 	 add_head(?PT_MATCHING,<<GameId:?u8,Len:?u8,Time:?u8>>);
 %% 3002
 write(?PT_MATCH_FAILED,_) ->
+	?log("PT_MATCH_FAILED~p"),
 	 add_head(?PT_MATCH_FAILED,<<>>);
 %% 2003
 write(?RES_QUIT_MATCH,GameId) ->
@@ -45,6 +47,7 @@ write(?RES_LOSED_FRAMES,{FramesId,Actions}) ->
 	add_head(?RES_LOSED_FRAMES,<<FramesId:?u32,Len:?u16,BinData/binary>>);
 %% 3003
 write(?PT_INIT_SNAKE_GAME,{GameId,Seed,Score,UserData}) ->
+	?log("PT_INIT_SNAKE_GAME~p",[{GameId,Seed,Score,UserData}]),
 	Fun=fun({Uid,Name,Skin,_})->  
 				<<Uid:?u32,?str(Name),Skin:?u8>>
 		end,

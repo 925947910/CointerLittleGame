@@ -1,0 +1,6 @@
+{release, {"the scene part of my game", "R1"}, {erts, "10.4"},
+    [{kernel, "6.4"},
+     {stdlib, "3.9"},
+     {syslog, "0.0.1"},
+     {scene, "0.0.1"}]}.
+

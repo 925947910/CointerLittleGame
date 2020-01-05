@@ -1,0 +1,9 @@
+{release, {"example", "R1"}, {erts, "10.4"},
+    [
+    {kernel, "6.4"},
+    {stdlib, "3.9"},
+    {syslog, "0.0.1"},
+    {mynet, "0.0.1"}
+    ]
+}.
+

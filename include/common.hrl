@@ -62,11 +62,11 @@
 
 
 
--define(USER_DB,0).
--define(EVENT_DB,1).
--define(GAME_ITEM_DB,2).
--define(STATIC_DATA_DB,4).
--define(USER_STATUS_DB,5).
+-define(USER_DB,10).
+-define(EVENT_DB,11).
+-define(GAME_ITEM_DB,12).
+-define(STATIC_DATA_DB,14).
+-define(USER_STATUS_DB,15).
 
 
 -define(EVENT_PAY,1).
