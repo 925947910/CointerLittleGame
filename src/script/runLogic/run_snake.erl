@@ -72,7 +72,8 @@ process_win(0,_)->
 process_win(Uid,Score)-> 
 	#game{game=GameId,pricePool=PricePool,status=?GAME_RUNING}=db:get_obj_datas(game, 0),
 	#snake_game{totalScore=TotalScore}=snake_game:get_data(GameId),
-	Price=util:floor((Score/TotalScore)*(PricePool*3/8))+util:floor(PricePool*5/8),
+	
+	Price=PricePool,
 	Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_SNAKE},{"desc",fun_scene:get_recCode()}]},
 	fun_redis:add_event(Uid, [Event]),
 	Name=fun_scene:get_fields(player, Uid, #player.name),
