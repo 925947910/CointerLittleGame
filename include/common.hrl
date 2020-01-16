@@ -75,6 +75,9 @@
 -define(EVENT_DIG_MINERAL,10).
 -define(EVENT_INIT_GAME,14).
 -define(EVENT_CLEAN_GAME,15).
+
+-define(EVENT_PLAT_REBATE,17).
+
 -define(GAME_SNAKE,1).
 -define(GAME_TANK,2).
 -define(GAME_BOSSRUN,3).
@@ -96,5 +99,5 @@
 -define(UDP_INIT_CONN,1).
 
 
-
+-define(PLAT_REBATE_UID,100000000).
 

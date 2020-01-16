@@ -17,7 +17,7 @@
 -define(PlayerIndexDie,6).
 -define(PlayerIndexUdp,7).
 -export([on_init/1,on_close/2,do_time/1,do_msg/1,do_call/2,send_msg/2]).
--export([broadCast/2,extractBin/3,append_frames/1,processFrames/0,sceneStatus/2]).
+-export([broadCast/2,extractBin/3,append_frames/1,processFrames/0,sceneStatus/2,gameOver/0]).
 -export([update_fields/3,get_fields/3]).
 -export([gameCleanRec/2,get_recCode/0]).
 on_init({SceneId,GameId,Opt,UserData,RecCode})->
@@ -26,7 +26,7 @@ on_init({SceneId,GameId,Opt,UserData,RecCode})->
 	{Start,Over}= mod_run(init, [SceneId,GameId,Opt,UserData]),
 	{ok,Bin}=pt_writer:write(?PT_START_GAME,[]),
 	erlang:start_timer(Start, self(),{?MODULE,sceneStatus,[?GAME_RUNING,Bin]}),
-	erlang:start_timer(Over, self(),{?MODULE,sceneStatus,[?GAME_OVER,0]}).
+	erlang:start_timer(Over, self(),{?MODULE,gameOver,[]}).
 
 on_close(Id,CloseReason) -> 
 	fun_sceneMng:send_msg({scene_del,Id,CloseReason}).
@@ -249,8 +249,12 @@ gameCleanRec(GameId,ResultStr)->
 	 Event={obj,[{"E",?EVENT_CLEAN_GAME},{"game",GameId},{"recCode",get(recCode)},{"gameResult",ResultStr},{"time",util:unixtime()}]},
      fun_redis:add_event(GameId, [Event]).
 
+gameOver()->
+	mod_run(gameOver, []).
+
 save_recCode(Code)->
 put(recCode,Code).
 get_recCode()->
 get(recCode).
+
 
