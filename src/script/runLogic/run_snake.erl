@@ -57,16 +57,20 @@ die(Uid,Killer)->
 	case  db:get_obj_datas(player, Uid)  of  
 		  #player{die=?FALSE}->
 			 fun_scene:update_fields(player, Uid, [{#player.die,?TRUE}]),
-			 fun_scene:update_fields(player, Killer, [{#player.kill,fun_scene:get_fields(player, Killer, #player.kill)+1}]),
+			 if Killer=/=0->
+					Kill=fun_scene:get_fields(player, Killer, #player.kill)+1,
+					fun_scene:update_fields(player, Killer, [{#player.kill,Kill}]);
+				true->skip
+			 end,
 			 check_win();
-		  _->skip
+		  _R->skip
 	end.
 
 check_win()->
 	case db:filter_class_objs(player, fun(#player{die=Die})-> Die==?FALSE end)  of  
 		[#player{id=Uid,score=Score}]->
 			process_win(Uid, Score);
-		_->skip
+		 _R->skip
 	end.
 process_win(Uid,Score)-> 
 	update_kills(),
@@ -85,7 +89,7 @@ gameOver()->
 	update_kills(),
 	#game{pricePool=PricePool}=db:get_obj_datas(game, 0),
 	Winners=case db:filter_class_objs(player, fun(#player{die=Die})-> Die==?FALSE end)  of  
-		Players when erlang:is_list(Players)->
+		Players when erlang:is_list(Players) andalso length(Players)>0->
 			Price=(PricePool-eatBeam(0)) div length(Players),
 			Fun=fun(#player{id=Uid,name=Name,score=Score})-> 
 					Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_SNAKE},{"desc",fun_scene:get_recCode()}]},	
