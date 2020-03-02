@@ -28,8 +28,7 @@ do_info(_Info) -> ok.
 
   do_msg({create_game,GameId,Opt,UserData})-> 
 	  SceneId=genSceneId(),
-	  SvrNum=get(svr_num),
-	  RecCode=util:to_binary(util:to_list(SvrNum)++util:to_list(util:unixtime())++util:to_list(SceneId)),
+	  RecCode=genRecCode(),
 	  Fun=fun({Uid,_,_,_})-> Uid end,
 	  Uids=lists:map(Fun, UserData),
 	  db:put_ets_data(scene, #scene{id=SceneId,hid=0,owner=0,game=GameId,players=Uids}),
@@ -93,7 +92,15 @@ genSceneId()->
 		   1  
 	end.
 
-
+genRecCode()->
+Now=util:unixtime(),
+	NewId=case  get('NewSceneId')  of  
+		{Id,Now} when erlang:is_integer(Id)->
+			put('NewSceneId',{Id+1,Now}),
+			Id;
+		_->put('NewSceneId', {2,Now}),
+		   1
+	end,util:to_binary(util:to_list(Now)++util:to_list(NewId)).
 
 
 

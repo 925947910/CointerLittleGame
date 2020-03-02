@@ -15,7 +15,8 @@
 -export([init/4,cliEvent/1,process_win/2,test/1,gameOver/0]).
 
 init(SceneId,Game,Opt,UserData)->
-	#snake_game{totalScore=Score,coin=Coin}=snake_game:get_data(Opt),
+	#snake_game{totalScore=ScorePer,coin=Coin}=snake_game:get_data(Opt),
+	put(scorePer,ScorePer),
 	PlayerNum=length(UserData),
 	PricePool=(Coin*PlayerNum*8) div 10,
     db:put_obj_datas(game, 0, #game{id=SceneId,game=Game,pricePool=PricePool}),
@@ -27,10 +28,10 @@ init(SceneId,Game,Opt,UserData)->
 		end,
 	Uids=lists:foldl(Fun, [], UserData),
 	
-	EventRebate={obj,[{"uid",?PLAT_REBATE_UID},{"E",?EVENT_PLAT_REBATE},{"pay",Coin*PlayerNum-PricePool},{"game",?GAME_SNAKE},{"desc",fun_scene:get_recCode()}]},
+	EventRebate={obj,[{"uid",?PLAT_REBATE_UID},{"E",?EVENT_PLAT_REBATE},{"price",Coin*PlayerNum-PricePool},{"game",?GAME_SNAKE},{"desc",fun_scene:get_recCode()}]},
 	fun_redis:add_event(?PLAT_REBATE_UID, [EventRebate]),
 	
-	{ok,Bin}=pt_writer:write(?PT_INIT_SNAKE_GAME,{Opt,util:unixtime(),Score,UserData}),		
+	{ok,Bin}=pt_writer:write(?PT_INIT_SNAKE_GAME,{Opt,util:unixtime(),(PricePool div ScorePer),UserData}),		
 	fun_scene:broadCast(Bin, Uids),
 	put(initBin,Bin),
 	#snake_game{start=Start,over=Over}=snake_game:get_data(Opt),
@@ -88,20 +89,26 @@ process_win(Uid,Score)->
 gameOver()->
 	update_kills(),
 	#game{pricePool=PricePool}=db:get_obj_datas(game, 0),
+	ScorePer=get(scorePer),
 	Winners=case db:filter_class_objs(player, fun(#player{die=Die})-> Die==?FALSE end)  of  
 		Players when erlang:is_list(Players) andalso length(Players)>0->
-			Price=(PricePool-eatBeam(0)) div length(Players),
+			F1=fun(#player{score=Score},Res)-> Res+Score end,
+			EatedBeams=lists:foldl(F1, 0, Players),
+			BasePrice=(PricePool-EatedBeams*ScorePer) div length(Players),
+			?log("!!!!!!!!!!!!!!!!gameOver  EatedBeams,ScorePer,BasePrice:~p",[{EatedBeams,ScorePer,BasePrice}]),
 			Fun=fun(#player{id=Uid,name=Name,score=Score})-> 
+					Price=	Score*ScorePer+BasePrice,
+					?log("!!!!!!!!!!!!!!!!gameOver Score:~p",[Score]),
 					Event={obj,[{"uid",Uid},{"E",?EVENT_WIN},{"price",Price},{"game",?GAME_SNAKE},{"desc",fun_scene:get_recCode()}]},	
 				    fun_redis:add_event(Uid, [Event]),
 					{obj,[{"存活者Id",Uid},{"存活者",Name},{"得分",Score},{"奖励",util:to_binary(Price/100)}]}
 				end,
 			lists:map(Fun, Players);
-		_->Price=0,[]
+		_->BasePrice=0,[]
 	end,
 	Str=rfc4627:encode({obj,[{"对局详情",Winners}]}),
 	fun_scene:gameCleanRec(?GAME_SNAKE, util:to_binary(Str)),
-	fun_scene:append_frames(<<?CliEventWin:?u8,0:?u32,Price:?u32>>),
+	fun_scene:append_frames(<<?CliEventWin:?u8,0:?u32,BasePrice:?u32>>),
     fun_scene:sceneStatus(?GAME_OVER, 0).
 	
 
@@ -130,12 +137,7 @@ update_kills()->
 		_->skip
 	end.
 
-eatBeam(Score)->
-case get(eatBeam) of  
-	Beam when erlang:is_integer(Beam)->put(eatBeam,Beam+Score),Beam+Score;
-	 _->put(eatBeam,Score),
-		Score
-end.
+
 
 test(Key)->
 	Str=rfc4627:encode({obj,[{"对局详情",<<"">>}]}),
